@@ -1,5 +1,9 @@
-
-const int debug=1;
+#define production
+#ifdef production
+#define debug 1
+#else
+#define debug 1000
+#endif
 const int ledPin = 16;
 const int buttonPin = 22;
 const int ledPin1 = 32;
@@ -8,22 +12,38 @@ const int Syn_ledPin=15;
 const int alpha=1300;
 const int beta=600;
 const int cis=13;
-const int delta=50;
+const int delta=500;
 const int t_s=50;
+const int formula_50=50;
 
 int buttonState, buttonState1;
 int lastButtonState = HIGH, lastButtonState1 = HIGH;
-int mode = 0, mode1 = 0;
+volatile bool mode = false;      
+volatile bool mode1 = false; 
 int al;
 int be;
 int ci;
 int de;
 int x;
+volatile unsigned long lastEnableInterruptTime = 0;
+volatile unsigned long lastSelectInterruptTime = 0;
+const unsigned long debounceDelayInterrupt = 250;
 
-unsigned long lastDebounceTime = millis(), lastDebounceTime1 = millis();
-const unsigned long debounceDelay = 250; 
+void IRAM_ATTR interupt_Enable() {
+  unsigned long now = millis();
+  if (now - lastEnableInterruptTime >= debounceDelayInterrupt) {
+    mode = !mode;
+    lastEnableInterruptTime = now;
+  }
+}
 
-
+void IRAM_ATTR interupt_Select() {
+  unsigned long now = millis();
+  if (now - lastSelectInterruptTime >= debounceDelayInterrupt) {
+    mode1 = !mode1;
+    lastSelectInterruptTime = now;
+  }
+}
 
 void setup() {
     pinMode(buttonPin, INPUT_PULLUP);
@@ -31,6 +51,8 @@ void setup() {
     pinMode(buttonPin1, INPUT_PULLUP);
     pinMode(ledPin1, OUTPUT);
     pinMode(Syn_ledPin,OUTPUT);
+    attachInterrupt(digitalPinToInterrupt(buttonPin), interupt_Enable, FALLING);
+    attachInterrupt(digitalPinToInterrupt(buttonPin1), interupt_Select, FALLING);
     Serial.begin(19200);
     Serial.println("Started");
 }
@@ -41,29 +63,12 @@ void loop() {
   al=alpha;
   be=beta;
   de=delta;
-
-  if ((millis() - lastDebounceTime) >= debounceDelay) {
-      if (buttonState == LOW && lastButtonState == HIGH) {
-          mode = !mode;
-          lastDebounceTime = millis();
-      }
-  }
-
   if(mode){
   ci=cis-3;
   }
   else{
   ci=cis;
   }
-  if ((millis() - lastDebounceTime1) >= debounceDelay) {
-    if (buttonState1 == LOW && lastButtonState1 == HIGH) {
-        mode1=!mode1;
-        lastDebounceTime1 = millis();
-    }
-  }
-  lastButtonState = buttonState;
-  lastButtonState1 = buttonState1;
-
   digitalWrite(ledPin, mode);
   x=0;
   if(mode1){
@@ -73,9 +78,9 @@ void loop() {
     while(x<ci){
       digitalWrite(ledPin1,HIGH);
       delayMicroseconds(al*debug);
-      digitalWrite(ledPin1,LOW);``
+      digitalWrite(ledPin1,LOW);
       delayMicroseconds(be*debug);
-      al=alpha+(x+1)*50;
+      al=alpha+(x+1)*formula_50;
       if(x==ci-1){
         delayMicroseconds(de*debug);
       }
