@@ -18,11 +18,14 @@ link: [Vscode](https://code.visualstudio.com/)
 
 # SETUP
 Arrange all the hard ware components as shown in the above circuit diagram and choose any version of the application and appropriate IDE.
+Download the file and try running the application.if you see nay errors check for appropriate error message and troubleshoot according.
+if application runs successfully connect the esp-32 microcontroller to the computer and it should be detected by both IDEs if not try choosing board and port according.Flash the microcontroller and try to reset the microcontroller and press the pushbutton to see the LEDs flashing.
+now try to connect the circuit to an osciolloscope and try to view the waveforms.
 
 # STRUCTURE
 B31DG_Assignment-1/  
 ├── Arduino_IDE/  
-│   └── sketch_v1/  
+│   └── sketch_v1/ 
 ├── ESP_IDF/  
 │   ├── main/  
 │   │   ├── Data_and_Sync.c  
